@@ -25,9 +25,9 @@ object GeneratorEngine {
      * Generator app versionName (kept in sync with build_generator_push.sh).
      * Numbering restarted at 1.0.0 with the move to the paprica repo;
      * the Android versionCode keeps increasing monotonically (this
-     * build is versionCode 3, following 2.0.0's versionCode 2).
+     * build is versionCode 4, following 1.0.0's versionCode 3).
      */
-    const val APP_VERSION_NAME = "1.0.0"
+    const val APP_VERSION_NAME = "1.1.0"
 
     /** Settings key: max number of history entries (Phase 5). */
     const val KEY_GEN_LIMIT = "gen_limit"
@@ -64,9 +64,11 @@ object GeneratorEngine {
 
     /**
      * @param permissions per-site capability toggles as a JSONObject with
-     *                    boolean keys microphone / camera / location /
-     *                    notifications (missing keys count as OFF); null
-     *                    means all OFF.
+     *                    boolean keys microphone / camera / location
+     *                    (missing keys count as OFF); null means all OFF.
+     *                    Notifications are NOT taken from this object:
+     *                    since v1.1.0 generated apps always get
+     *                    notifications enabled (see below).
      * @param updateFeedUrl optional update feed URL baked into the
      *                    generated app's config; null disables the
      *                    generated app's own update check.
@@ -125,7 +127,13 @@ object GeneratorEngine {
             microphone = permissions?.optBoolean("microphone", false) ?: false
             camera = permissions?.optBoolean("camera", false) ?: false
             location = permissions?.optBoolean("location", false) ?: false
-            notifications = permissions?.optBoolean("notifications", false) ?: false
+            // Always ON (user decision, v1.1.0): Pアプリカ has no
+            // notifications toggle. Forcing it here — rather than
+            // trusting the caller's JSON — also makes re-generation
+            // of pre-1.1.0 history entries (which may carry
+            // notifications=false) produce notifications-enabled
+            // apps, and keeps POST_NOTIFICATIONS in the manifest.
+            notifications = true
             templateVersion = TEMPLATE_VERSION
             this.updateFeedUrl = updateFeedUrl
             this.pushMode = if (pushMode == "self") "self" else "hub"

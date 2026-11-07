@@ -163,7 +163,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="必要なサイトだけONにしてください。OFFの権限は生成アプリに含まれません。初期値は設定ページで変更できます。"
+                android:text="必要なサイトだけONにしてください。OFFの権限は生成アプリに含まれません。初期値は設定ページで変更できます。通知は常に許可されます（Webプッシュ用）。"
                 android:textColor="@color/ink_sub"
                 android:textSize="12sp" />
 
@@ -189,12 +189,6 @@
                 android:text="位置情報" 
                 android:textColor="@color/ink"/>
 
-            <Switch
-                android:id="@+id/permNotifications"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="通知（Webプッシュ含む）" 
-                android:textColor="@color/ink"/>
         </LinearLayout>
 
         <!-- Card: icon -->

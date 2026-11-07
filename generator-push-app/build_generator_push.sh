@@ -5,7 +5,7 @@
 # Same manual pipeline as the regular edition: aapt2 compile/link ->
 # kotlinc -> d8 (app classes + kotlin-stdlib + apksig classes) ->
 # zipalign -> apksigner. No Gradle daemon.
-# Output: ~/workspace/web2apk/dist/paprica-v1.0.0.apk
+# Output: ~/workspace/web2apk/dist/paprica-v1.1.0.apk
 # The push-edition generator APK itself is signed with the keystore in
 # KS (the project's ongoing release key; see build_generator.sh).
 # The APKs this generator *produces* are signed on-device with the
@@ -28,7 +28,7 @@ KS="$ROOT/test-keystore-TEST-ONLY.jks"
 # without embedding the secret (default is the local test value).
 KS_PASS="${WEB2APK_KS_PASS:-change-me}"
 APKSIG_JAR="$ROOT/generator-push-app/libs/apksig-only.jar"
-OUT="$ROOT/dist/paprica-v1.0.0.apk"
+OUT="$ROOT/dist/paprica-v1.1.0.apk"
 
 # --- 0. apksig-only jar (extract com/android/apksig/** from SDK apksigner.jar)
 if [ ! -f "$APKSIG_JAR" ]; then
@@ -58,7 +58,7 @@ echo "== 2. aapt2 link (manifest + resources + assets incl. gecko template.apk) 
   -A "$APP/src/main/assets" \
   --java "$WORK/gen" \
   --min-sdk-version 26 --target-sdk-version 34 \
-  --version-code 3 --version-name 1.0.0 \
+  --version-code 4 --version-name 1.1.0 \
   "$WORK/compiled/res.zip"
 
 echo "== 3. kotlinc (no daemon; Kotlin + Java mixed sources + generated R) =="
@@ -89,7 +89,7 @@ cp "$WORK/unsigned.apk" "$WORK/with-dex.apk"
 (cd "$WORK/dex" && zip -q "$WORK/with-dex.apk" classes.dex)
 "$BT/zipalign" -f 4 "$WORK/with-dex.apk" "$WORK/aligned.apk"
 
-echo "== 6. apksigner sign paprica-v1.0.0.apk (release keystore) =="
+echo "== 6. apksigner sign paprica-v1.1.0.apk (release keystore) =="
 "$BT/apksigner" sign \
   --ks "$KS" --ks-pass "pass:$KS_PASS" --key-pass "pass:$KS_PASS" \
   --v1-signing-enabled true --v2-signing-enabled true \

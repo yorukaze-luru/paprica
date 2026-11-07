@@ -44,7 +44,6 @@ class SettingsActivity : Activity() {
         bindDefaultSwitch(R.id.defMic, MainActivity.KEY_DEF_MIC)
         bindDefaultSwitch(R.id.defCamera, MainActivity.KEY_DEF_CAMERA)
         bindDefaultSwitch(R.id.defLocation, MainActivity.KEY_DEF_LOCATION)
-        bindDefaultSwitch(R.id.defNotifications, MainActivity.KEY_DEF_NOTIFICATIONS)
 
         updateStatus = findViewById(R.id.updateStatus)
         findViewById<TextView>(R.id.versionText).text =

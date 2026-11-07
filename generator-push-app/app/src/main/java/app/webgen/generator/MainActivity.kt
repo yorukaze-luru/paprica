@@ -45,7 +45,6 @@ class MainActivity : Activity() {
     private lateinit var permMic: Switch
     private lateinit var permCamera: Switch
     private lateinit var permLocation: Switch
-    private lateinit var permNotifications: Switch
     private lateinit var pushModeHub: RadioButton
     private lateinit var pushModeSelf: RadioButton
     private lateinit var iconPreview: ImageView
@@ -87,7 +86,6 @@ class MainActivity : Activity() {
         permMic = findViewById(R.id.permMic)
         permCamera = findViewById(R.id.permCamera)
         permLocation = findViewById(R.id.permLocation)
-        permNotifications = findViewById(R.id.permNotifications)
         pushModeHub = findViewById(R.id.pushModeHub)
         pushModeSelf = findViewById(R.id.pushModeSelf)
         pushModeHub.isChecked = true
@@ -136,7 +134,8 @@ class MainActivity : Activity() {
         // enabled, and make sure its persistent notification can be
         // shown (POST_NOTIFICATIONS, API 33+).
         app.webgen.updist.UpDistributor.start(this, DIST_NOTIFICATION_LABEL)
-        if (android.os.Build.VERSION.SDK_INT >= 33 &&
+        if (app.webgen.updist.UpDistributor.isEnabled(this) &&
+            android.os.Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) !=
             android.content.pm.PackageManager.PERMISSION_GRANTED
         ) {
@@ -182,7 +181,6 @@ class MainActivity : Activity() {
         permMic.isChecked = p.getBoolean(KEY_DEF_MIC, false)
         permCamera.isChecked = p.getBoolean(KEY_DEF_CAMERA, false)
         permLocation.isChecked = p.getBoolean(KEY_DEF_LOCATION, false)
-        permNotifications.isChecked = p.getBoolean(KEY_DEF_NOTIFICATIONS, false)
         appliedDefaultsRev = p.getLong(KEY_DEF_REV, 0)
     }
 
@@ -484,7 +482,10 @@ class MainActivity : Activity() {
             put("microphone", permMic.isChecked)
             put("camera", permCamera.isChecked)
             put("location", permLocation.isChecked)
-            put("notifications", permNotifications.isChecked)
+            // Notifications are always allowed in Pアプリカ
+            // (v1.1.0): there is no toggle; generated apps always
+            // keep POST_NOTIFICATIONS so Web Push can work.
+            put("notifications", true)
         }
     }
 
@@ -817,7 +818,6 @@ class MainActivity : Activity() {
             permMic.isChecked = perms.optBoolean("microphone")
             permCamera.isChecked = perms.optBoolean("camera")
             permLocation.isChecked = perms.optBoolean("location")
-            permNotifications.isChecked = perms.optBoolean("notifications")
         }
         val icon = GeneratorEngine.extractIcon(File(entry.optString("path")))
         if (icon != null) {
@@ -848,7 +848,6 @@ class MainActivity : Activity() {
         const val KEY_DEF_MIC = "def_perm_microphone"
         const val KEY_DEF_CAMERA = "def_perm_camera"
         const val KEY_DEF_LOCATION = "def_perm_location"
-        const val KEY_DEF_NOTIFICATIONS = "def_perm_notifications"
         const val KEY_DEF_REV = "def_perm_rev"
         private val PACKAGE_RE = Regex("^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$")
         private val REPO_RE = Regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
