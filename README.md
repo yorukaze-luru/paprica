@@ -4,6 +4,8 @@
 **プッシュ対応版**です。通常版の WebView エンジンでは使えない、サイトの **Web プッシュ通知** を
 生成したアプリで受け取れます。
 
+> 通常版『アプリカ』はこちら → https://github.com/yorukaze-luru/aprica
+
 > **リポジトリ移行のお知らせ**
 > Pアプリカは以前、通常版アプリカのリポジトリ
 > （[yorukaze-luru/aprica](https://github.com/yorukaze-luru/aprica)）で
