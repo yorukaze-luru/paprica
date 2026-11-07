@@ -2,12 +2,14 @@ package app.webgen.generator
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Spinner
 import android.widget.Switch
@@ -21,12 +23,26 @@ import android.widget.TextView
  *   Saving bumps a revision counter; MainActivity re-applies the
  *   defaults to its form when the revision changes.
  * - Generator update check against the baked-in GitHub repo
- *   (button only; there is no repo input field).
+ *   (button only; there is no repo input field). Since v1.2 the
+ *   update download also runs here: the update card shows the state
+ *   text, a progress bar and the downloaded/total size until the
+ *   install step begins, instead of a fire-and-forget toast.
  * - Notes about installing generated APKs and Google Play Protect.
  */
 class SettingsActivity : Activity() {
 
     private lateinit var updateStatus: TextView
+    private lateinit var checkUpdateButton: Button
+    private lateinit var updateActionButton: Button
+    private lateinit var updateProgress: ProgressBar
+    private lateinit var updateProgressText: TextView
+
+    /** The update offered by the last check (or handed over from the
+     *  dialog on the main screen); null when no update is pending. */
+    private var pendingTag: String? = null
+    private var pendingPageUrl: String? = null
+    private var pendingAssetUrl: String? = null
+    private var downloading = false
 
     private var appliedThemeMode = -1
 
@@ -46,14 +62,24 @@ class SettingsActivity : Activity() {
         bindDefaultSwitch(R.id.defLocation, MainActivity.KEY_DEF_LOCATION)
 
         updateStatus = findViewById(R.id.updateStatus)
+        updateActionButton = findViewById(R.id.updateActionButton)
+        updateProgress = findViewById(R.id.updateProgress)
+        updateProgressText = findViewById(R.id.updateProgressText)
         findViewById<TextView>(R.id.versionText).text =
             "現在のバージョン: Pアプリカ v${GeneratorEngine.APP_VERSION_NAME}"
-        findViewById<Button>(R.id.checkUpdateButton).setOnClickListener {
+        checkUpdateButton = findViewById(R.id.checkUpdateButton)
+        checkUpdateButton.setOnClickListener {
             checkUpdate()
         }
+        updateActionButton.setOnClickListener { onUpdateAction() }
         findViewById<Button>(R.id.backButton).setOnClickListener { finish() }
         setupDistributorCard()
         setupGenLimitCard()
+
+        // Arriving from the update dialog on the main screen: the
+        // user already confirmed, so start the download right away
+        // and let them watch its progress here.
+        handleUpdateIntent(intent)
     }
 
     // ---------------- Phase 5: distributor + generation limit --------
@@ -194,26 +220,180 @@ class SettingsActivity : Activity() {
     }
 
     private fun checkUpdate() {
+        if (downloading) return
+        checkUpdateButton.isEnabled = false
+        hideUpdateAction()
+        hideUpdateProgress()
         updateStatus.text = "更新を確認しています…"
         UpdateChecker.fetchLatest(UpdateChecker.DEFAULT_REPO) { tag, pageUrl, assetUrl, error ->
             runOnUiThread {
+                checkUpdateButton.isEnabled = true
                 when {
-                    error != null ->
+                    error != null -> {
+                        clearPendingUpdate()
                         updateStatus.text = "更新の確認に失敗しました: $error"
-                    tag == null ->
+                    }
+                    tag == null -> {
+                        clearPendingUpdate()
                         updateStatus.text = "リリースが見つかりませんでした"
+                    }
                     UpdateChecker.compareVersions(
                         tag, GeneratorEngine.APP_VERSION_NAME
                     ) > 0 -> {
+                        pendingTag = tag
+                        pendingPageUrl = pageUrl
+                        pendingAssetUrl = assetUrl
                         updateStatus.text =
                             "新しいバージョン $tag があります"
-                        UpdateFlow.prompt(this, tag, pageUrl!!, assetUrl)
+                        showUpdateAction()
                     }
-                    else ->
+                    else -> {
+                        clearPendingUpdate()
                         updateStatus.text =
                             "最新です（Pアプリカ v${GeneratorEngine.APP_VERSION_NAME}）"
+                    }
                 }
             }
+        }
+    }
+
+    // ---------------- in-page update download (v1.2) -----------------
+
+    private fun clearPendingUpdate() {
+        pendingTag = null
+        pendingPageUrl = null
+        pendingAssetUrl = null
+        hideUpdateAction()
+    }
+
+    private fun hideUpdateAction() {
+        updateActionButton.visibility = View.GONE
+    }
+
+    private fun hideUpdateProgress() {
+        updateProgress.visibility = View.GONE
+        updateProgressText.visibility = View.GONE
+    }
+
+    private fun showUpdateAction() {
+        updateActionButton.text =
+            if (pendingAssetUrl != null) "ダウンロードして更新" else "リリースページを開く"
+        updateActionButton.isEnabled = true
+        updateActionButton.visibility = View.VISIBLE
+    }
+
+    private fun onUpdateAction() {
+        when {
+            pendingAssetUrl != null -> startUpdateDownload()
+            pendingPageUrl != null -> UpdateFlow.openPage(this, pendingPageUrl!!)
+        }
+    }
+
+    /**
+     * Called when the update was already confirmed in the dialog
+     * (on the main screen, or — defensively — on this page itself):
+     * offers the update here and starts the download immediately.
+     */
+    fun beginConfirmedUpdate(tag: String, pageUrl: String?, assetUrl: String?) {
+        pendingTag = tag
+        pendingPageUrl = pageUrl
+        pendingAssetUrl = assetUrl
+        updateStatus.text = "新しいバージョン $tag があります"
+        showUpdateAction()
+        if (assetUrl != null) startUpdateDownload()
+    }
+
+    private fun handleUpdateIntent(intent: Intent?) {
+        val tag = intent?.getStringExtra(EXTRA_UPDATE_TAG) ?: return
+        beginConfirmedUpdate(
+            tag,
+            intent.getStringExtra(EXTRA_UPDATE_PAGE_URL),
+            intent.getStringExtra(EXTRA_UPDATE_ASSET_URL)
+        )
+    }
+
+    private fun startUpdateDownload() {
+        val assetUrl = pendingAssetUrl ?: return
+        if (downloading) return
+        downloading = true
+        checkUpdateButton.isEnabled = false
+        updateActionButton.isEnabled = false
+        val tag = pendingTag ?: ""
+        updateStatus.text = "ダウンロード中…（$tag）"
+        updateProgress.isIndeterminate = true
+        updateProgress.visibility = View.VISIBLE
+        updateProgressText.text = ""
+        updateProgressText.visibility = View.VISIBLE
+        UpdateFlow.download(this, assetUrl, object : UpdateFlow.DownloadListener {
+            override fun onProgress(downloaded: Long, total: Long) {
+                if (total > 0) {
+                    val percent = (downloaded * 100 / total).toInt()
+                    updateProgress.isIndeterminate = false
+                    updateProgress.progress = percent
+                    updateStatus.text = "ダウンロード中… $percent%"
+                    updateProgressText.text =
+                        "${formatMb(downloaded)} MB / ${formatMb(total)} MB"
+                } else {
+                    // Size unknown: indeterminate bar, but the byte
+                    // count still shows that the download is moving.
+                    updateProgress.isIndeterminate = true
+                    updateStatus.text = "ダウンロード中…"
+                    updateProgressText.text =
+                        "${formatMb(downloaded)} MB ダウンロード済み"
+                }
+            }
+
+            override fun onDownloaded(file: java.io.File) {
+                downloading = false
+                updateProgress.isIndeterminate = false
+                updateProgress.progress = 100
+                updateStatus.text =
+                    "ダウンロードが完了しました。インストールを開始します…"
+                checkUpdateButton.isEnabled = true
+                hideUpdateAction()
+                Installer.install(this@SettingsActivity, file, packageName)
+            }
+
+            override fun onError(message: String) {
+                downloading = false
+                hideUpdateProgress()
+                updateStatus.text = "ダウンロードに失敗しました: $message"
+                checkUpdateButton.isEnabled = true
+                updateActionButton.isEnabled = true // allow retry
+            }
+        })
+    }
+
+    private fun formatMb(bytes: Long): String =
+        String.format(java.util.Locale.US, "%.1f", bytes / 1_000_000.0)
+
+    companion object {
+        private const val EXTRA_UPDATE_TAG =
+            "app.webgen.generator.extra.UPDATE_TAG"
+        private const val EXTRA_UPDATE_PAGE_URL =
+            "app.webgen.generator.extra.UPDATE_PAGE_URL"
+        private const val EXTRA_UPDATE_ASSET_URL =
+            "app.webgen.generator.extra.UPDATE_ASSET_URL"
+
+        /**
+         * Opens the settings page to run an already-confirmed update
+         * download there, where its progress stays visible. When the
+         * settings page is already in front, no new instance is
+         * stacked; the update starts on it directly.
+         */
+        fun openForUpdate(
+            from: Activity, tag: String, pageUrl: String, assetUrl: String?
+        ) {
+            if (from is SettingsActivity) {
+                from.beginConfirmedUpdate(tag, pageUrl, assetUrl)
+                return
+            }
+            val intent = Intent(from, SettingsActivity::class.java).apply {
+                putExtra(EXTRA_UPDATE_TAG, tag)
+                putExtra(EXTRA_UPDATE_PAGE_URL, pageUrl)
+                putExtra(EXTRA_UPDATE_ASSET_URL, assetUrl)
+            }
+            from.startActivity(intent)
         }
     }
 

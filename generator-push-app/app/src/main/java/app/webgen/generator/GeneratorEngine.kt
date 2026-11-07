@@ -25,9 +25,9 @@ object GeneratorEngine {
      * Generator app versionName (kept in sync with build_generator_push.sh).
      * Numbering restarted at 1.0.0 with the move to the paprica repo;
      * the Android versionCode keeps increasing monotonically (this
-     * build is versionCode 4, following 1.0.0's versionCode 3).
+     * build is versionCode 5, following 1.1.0's versionCode 4).
      */
-    const val APP_VERSION_NAME = "1.1.0"
+    const val APP_VERSION_NAME = "1.2.0"
 
     /** Settings key: max number of history entries (Phase 5). */
     const val KEY_GEN_LIMIT = "gen_limit"

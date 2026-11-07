@@ -100,14 +100,21 @@ object UpdateChecker {
         }
     }
     /**
-     * Downloads an APK (e.g. a newer アプリカ release) into the app's
-     * cache on a background thread, for the in-app update flow (v1.5).
-     * Callback: (downloaded file, error message); runs on the
+     * Downloads an APK (e.g. a newer Pアプリカ release) into the app's
+     * cache on a background thread, for the in-app update flow.
+     *
+     * [onProgress] runs on the background thread with
+     * (bytes downloaded so far, total bytes); the total is -1 when the
+     * server did not report a size. It fires when the whole-percent
+     * value changes or at least every ~200 ms, plus once when the
+     * stream ends, so the settings page can show live progress (v1.2).
+     * [callback]: (downloaded file, error message); also on the
      * background thread.
      */
     fun downloadApk(
         ctx: android.content.Context,
         url: String,
+        onProgress: (downloaded: Long, total: Long) -> Unit = { _, _ -> },
         callback: (file: java.io.File?, error: String?) -> Unit
     ) {
         thread {
@@ -118,8 +125,32 @@ object UpdateChecker {
                 conn.connectTimeout = 15_000
                 conn.readTimeout = 30_000
                 conn.instanceFollowRedirects = true
+                val total = conn.contentLengthLong
                 conn.inputStream.use { input ->
-                    out.outputStream().use { input.copyTo(it) }
+                    out.outputStream().use { output ->
+                        val buf = ByteArray(64 * 1024)
+                        var downloaded = 0L
+                        var lastReportAt = 0L
+                        var lastPercent = -1
+                        while (true) {
+                            val n = input.read(buf)
+                            if (n < 0) break
+                            output.write(buf, 0, n)
+                            downloaded += n
+                            val percent = if (total > 0) {
+                                (downloaded * 100 / total).toInt()
+                            } else {
+                                -1
+                            }
+                            val now = System.currentTimeMillis()
+                            if (percent != lastPercent || now - lastReportAt >= 200) {
+                                lastPercent = percent
+                                lastReportAt = now
+                                onProgress(downloaded, total)
+                            }
+                        }
+                        onProgress(downloaded, total)
+                    }
                 }
                 if (out.length() == 0L) throw java.io.IOException("empty download")
                 callback(out, null)

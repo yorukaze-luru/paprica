@@ -240,6 +240,36 @@
                 android:textColor="@color/ink"
                 android:textSize="13sp" />
 
+            <Button
+                android:id="@+id/updateActionButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_button_primary"
+                android:text="ダウンロードして更新"
+                android:textColor="@color/white"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/updateProgress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:indeterminateTint="@color/brand_mint"
+                android:max="100"
+                android:progressTint="@color/brand_mint"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/updateProgressText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/ink_sub"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/versionText"
                 android:layout_width="wrap_content"
