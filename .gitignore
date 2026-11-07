@@ -1,0 +1,22 @@
+# --- 署名キーと秘密情報（絶対に公開しない） ---
+*.jks
+*.keystore
+*.p12
+*.pk8
+*.pem
+keystore.properties
+*.idsig
+
+# --- ビルド用ツールチェーン ---
+tools/
+
+# --- ビルド成果物・作業領域 ---
+*.apk
+build-manual/
+build-generator/
+build-generator-test/
+__pycache__/
+*.pyc
+
+# --- ローカル設定 ---
+local.properties

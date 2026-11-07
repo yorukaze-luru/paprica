@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="app.webgen.generator.push">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Generated apps are launcher apps; declaring this intent makes
+         them visible to getPackageInfo / getLaunchIntentForPackage
+         (install state, launch button, silent-update checks). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Built-in UnifiedPush distributor (Phase 5, shared module) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Pアプリカ"
+        android:largeHeap="true"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:theme="@style/Theme.WebGen">
+        <activity
+            android:name="app.webgen.generator.MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="app.webgen.generator.SettingsActivity"
+            android:exported="false" />
+        <receiver
+            android:name="app.webgen.generator.InstallResultReceiver"
+            android:exported="false" />
+
+        <!-- UnifiedPush distributor (DISTRIBUTOR-CONTRACT.md §1.4):
+             exported receiver; REGISTER is the discovery action,
+             UNREGISTER / MESSAGE_ACK are package-addressed to us. -->
+        <receiver
+            android:name="app.webgen.updist.DistributorReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.unifiedpush.android.distributor.REGISTER" />
+                <action android:name="org.unifiedpush.android.distributor.UNREGISTER" />
+                <action android:name="org.unifiedpush.android.distributor.MESSAGE_ACK" />
+            </intent-filter>
+        </receiver>
+        <service
+            android:name="app.webgen.updist.NtfyRelayService"
+            android:exported="false"
+            android:foregroundServiceType="remoteMessaging" />
+        <receiver
+            android:name="app.webgen.updist.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <!-- Serves generated APKs to the installer / share targets.
+             Custom provider (no AndroidX FileProvider in this project);
+             authority is bound to this app's own package. -->
+        <provider
+            android:name="app.webgen.generator.GenFileProvider"
+            android:authorities="app.webgen.generator.push.files"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+    </application>
+
+</manifest>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_bg">#0C1B1A</color>
+    <color name="card_border">#274743</color>
+    <color name="ink">#E8F4F1</color>
+    <color name="ink_sub">#9DB8B3</color>
+    <color name="brand_teal_text">#35D0BA</color>
+</resources>

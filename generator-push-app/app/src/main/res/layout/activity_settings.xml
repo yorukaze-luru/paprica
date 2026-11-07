@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="設定"
+            android:textColor="@color/ink"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <!-- Card: permission defaults -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="権限のデフォルト"
+                android:textColor="@color/ink"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="作成画面の権限トグルの初期値です。ここでONにした権限が、作成画面を開いたときにあらかじめONになります（作成画面側でアプリごとに変更もできます）。"
+                android:textColor="@color/ink_sub"
+                android:textSize="12sp" />
+
+            <Switch
+                android:id="@+id/defMic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="マイク（音声入力・通話など）" 
+                android:textColor="@color/ink"/>
+
+            <Switch
+                android:id="@+id/defCamera"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="カメラ（撮影・ビデオ通話など）" 
+                android:textColor="@color/ink"/>
+
+            <Switch
+                android:id="@+id/defLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="位置情報" 
+                android:textColor="@color/ink"/>
+
+            <Switch
+                android:id="@+id/defNotifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="通知（アプリ側の通知のみ。Webプッシュ通知は非対応）" 
+                android:textColor="@color/ink"/>
+        </LinearLayout>
+
+
+        <!-- Card: distributor (Phase 5) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="プッシュ配信（内蔵配信機能）"
+                android:textColor="@color/ink"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="「Pアプリカ経由」で生成したアプリのWebプッシュを、このアプリが中継します。OFFにすると受信待機を止め、新しい登録には失敗を返します（生成・履歴・更新には影響しません）。"
+                android:textColor="@color/ink_sub"
+                android:textSize="12sp" />
+
+            <Switch
+                android:id="@+id/distributorToggle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="配信を有効にする"
+                android:textColor="@color/ink" />
+
+            <TextView
+                android:id="@+id/distributorStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="接続状態: -"
+                android:textColor="@color/ink"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Card: generation limit (Phase 5) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="生成できるアプリの上限"
+                android:textColor="@color/ink"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="履歴の件数が上限に達すると、新しいアプリは生成できません（1〜100）。上限を下げても既存の履歴は削除されません。"
+                android:textColor="@color/ink_sub"
+                android:textSize="12sp" />
+
+            <EditText
+                android:id="@+id/genLimitInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input"
+                android:textColor="@color/ink"
+                android:textColorHint="@color/ink_sub"
+                android:hint="10"
+                android:inputType="number"
+                android:padding="12dp"
+                android:singleLine="true" />
+
+            <Button
+                android:id="@+id/genLimitSaveButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_button_secondary"
+                android:text="上限を保存"
+                android:textColor="@color/brand_teal_dark" />
+
+            <TextView
+                android:id="@+id/genLimitStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/ink"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Card: appearance -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="表示"
+                android:textColor="@color/ink"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="アプリカ本体のテーマです。生成したアプリは、サイト側のダークモード対応に連動します。"
+                android:textColor="@color/ink_sub"
+                android:textSize="13sp" />
+
+            <Spinner
+                android:id="@+id/themeSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input"
+                android:padding="10dp" />
+        </LinearLayout>
+
+        <!-- Card: updates -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pアプリカの更新"
+                android:textColor="@color/ink"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="更新チェック先はアプリに組み込まれています（yorukaze-luru/paprica の GitHub Releases）。新しいAPKも同じ署名キーで署名されているため、上書きインストールできます。生成したアプリへも、このリポジトリが更新フィードとして書き込まれます。"
+                android:textColor="@color/ink_sub"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/checkUpdateButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_button_secondary"
+                android:text="更新を確認"
+                android:textColor="@color/brand_teal_dark" />
+
+            <TextView
+                android:id="@+id/updateStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/ink"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/versionText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="現在のバージョン: アプリカ"
+                android:textColor="@color/ink_sub"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Card: install notes -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="インストールと Play プロテクト"
+                android:textColor="@color/ink"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="生成したアプリをインストールするとき、Google Play プロテクトの確認画面が出ることがあります。これはストア外から入れるアプリへの Android 標準の確認で、アプリ側で消したり範囲を変えたりすることはできません。確認画面では内容を確認して「そのままインストール」を選んでください。アプリカからインストールするときだけ、事前の案内ダイアログを表示します。Play プロテクト自体を止めたい場合は Play ストアのプロテクト設定から変更できますが、端末全体の保護が弱くなるためおすすめしません。"
+                android:textColor="@color/ink_sub"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_button_primary"
+            android:text="作成画面に戻る"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</ScrollView>

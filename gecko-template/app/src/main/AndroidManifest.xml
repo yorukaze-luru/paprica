@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="app.webgen.geckotemplate">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Optional capabilities (same set as the WebView template v1.2+).
+         The generator can neutralize each of these per generated app by
+         renaming the string in the binary manifest to an undefined
+         app.webgen.disabled.* name, which Android ignores. The template
+         additionally honors the site_config.json permission toggles at
+         runtime (see MainActivity). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Embedded UnifiedPush distributor (template v3 self mode,
+         Phase 5). FOREGROUND_SERVICE + the remoteMessaging type
+         permission are STRUCTURAL for self apps: they are declared
+         unconditionally and are NOT tied to the per-site
+         notifications toggle — neither patch_apk.py nor the
+         generator's ApkBuilder renames them, by explicit decision
+         (see PORT-REPORT). Enforcement is in code instead:
+         UpDistributor.isEnabled() gates on the baked
+         site_config.json (pushMode=self AND notifications ON);
+         when the gate is closed the distributor receiver replies
+         REGISTRATION_FAILED and the FGS never starts, permission
+         or not. RECEIVE_BOOT_COMPLETED lets the relay restart
+         after boot when registrations persist; WAKE_LOCK is also
+         merged from the GeckoView/UnifiedPush AARs (declared here
+         so the source manifest is self-describing; the build's
+         merge de-duplicates it). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application
+        android:allowBackup="true"
+        android:extractNativeLibs="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="WebGen Gecko Template"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="false"
+        android:theme="@style/Theme.WebGen">
+        <activity
+            android:name="app.webgen.geckotemplate.MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- UnifiedPush connector callbacks (connector 3.3.5
+             MessagingReceiver, Phase-2 proven). The distributor
+             broadcasts NEW_ENDPOINT / MESSAGE / UNREGISTERED /
+             REGISTRATION_FAILED / TEMP_UNAVAILABLE to this package;
+             the base class resolves the instance by token, decrypts
+             Web Push payloads with the connector-managed keys
+             (DefaultKeyManager) and dispatches to PushBridge. -->
+        <receiver
+            android:name="app.webgen.geckotemplate.PushReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.unifiedpush.android.connector.MESSAGE" />
+                <action android:name="org.unifiedpush.android.connector.UNREGISTERED" />
+                <action android:name="org.unifiedpush.android.connector.NEW_ENDPOINT" />
+                <action android:name="org.unifiedpush.android.connector.REGISTRATION_FAILED" />
+                <action android:name="org.unifiedpush.android.connector.TEMP_UNAVAILABLE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Embedded UnifiedPush distributor (DISTRIBUTOR-CONTRACT.md
+             §1.4): discovery is RECEIVER-based — the connector's
+             getDistributors() queryBroadcastReceivers looks for an
+             EXPORTED receiver whose filter carries
+             org.unifiedpush.android.distributor.REGISTER (a
+             <service> alone is invisible to discovery; the
+             PORT-REPORT draft spec's service sketch is superseded
+             by the contract). UNREGISTER / MESSAGE_ACK ride the
+             same receiver (package-addressed broadcasts).
+             Naming: the class names below are fully qualified in
+             the INDEPENDENT package app.webgen.updist (the shared
+             module's package, kept verbatim), exactly like
+             MainActivity/PushReceiver are fully qualified — the
+             patcher's exact-match rules rewrite only the bare
+             package string and the two provider authorities, never
+             class-name strings, so these names stay
+             "app.webgen.updist.*" in every generated app and
+             resolve to the classes DEFINED in the dex under those
+             same names, whatever package the patcher assigns.
+             They do NOT start with the connector's embedded-FCM
+             prefixes (org.unifiedpush.android.embedded_fcm_distributor.
+             / foss_embedded_fcm_distributor.), so
+             hasEmbeddedFcmDistributor() stays false and the
+             own-package distributor is listed normally.
+             No label is set on these components: they inherit the
+             (patched) application label. The distributor declares
+             no provider, so no new authority / no
+             INSTALL_FAILED_CONFLICTING_PROVIDER risk. -->
+        <receiver
+            android:name="app.webgen.updist.DistributorReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.unifiedpush.android.distributor.REGISTER" />
+                <action android:name="org.unifiedpush.android.distributor.UNREGISTER" />
+                <action android:name="org.unifiedpush.android.distributor.MESSAGE_ACK" />
+            </intent-filter>
+        </receiver>
+        <service
+            android:name="app.webgen.updist.NtfyRelayService"
+            android:exported="false"
+            android:foregroundServiceType="remoteMessaging" />
+        <receiver
+            android:name="app.webgen.updist.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

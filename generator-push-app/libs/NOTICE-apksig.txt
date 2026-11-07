@@ -1,0 +1,16 @@
+apksig-only.jar
+===============
+
+This jar contains only the com/android/apksig/** classes extracted from the
+Android SDK build-tools 34.0.0 `apksigner.jar`.
+
+apksig is the APK signing library developed by the Android Open Source
+Project (AOSP) and is licensed under the Apache License, Version 2.0.
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+The org/conscrypt/** classes that also live inside apksigner.jar are NOT
+included: jdeps shows the apksig classes depend only on java.* APIs, and
+they are not needed to sign APKs (verified by signing
+sample-wiki-by-generator-code.apk with these classes on the JVM and
+validating it with the SDK apksigner tool — see REPORT-GENERATOR.md).

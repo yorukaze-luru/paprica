@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Aprica brand palette: mint -> teal, matching the app icon. -->
+    <color name="brand_teal">#0E9594</color>
+    <color name="brand_teal_dark">#0A6E6D</color>
+    <color name="brand_mint">#35D0BA</color>
+    <color name="brand_bg">#F2F8F7</color>
+    <color name="brand_card_border">#D7EAE7</color>
+    <color name="brand_input_bg">#F7FBFA</color>
+    <color name="ink">#173A3A</color>
+    <color name="ink_sub">#57726F</color>
+    <color name="white">#FFFFFF</color>
+    <color name="brand_teal_text">#0A6E6D</color>
+</resources>
