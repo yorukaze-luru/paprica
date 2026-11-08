@@ -200,7 +200,7 @@ def main():
     ap.add_argument("--old-label", default="WebGen Template")
     ap.add_argument("--ks", default=str(HERE / "test-keystore-TEST-ONLY.jks"),
                     help="TEST-ONLY keystore by default")
-    ap.add_argument("--ks-pass", default="testonly")
+    ap.add_argument("--ks-pass", default="change-me")
     args = ap.parse_args()
 
     icon_bytes = Path(args.icon).read_bytes() if args.icon else None
